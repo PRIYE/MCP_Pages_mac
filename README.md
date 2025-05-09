@@ -282,7 +282,9 @@ GMAIL_USER=your_email_here
 
 ```python
 # Example: Calculate ASCII values of "INDIA" and display result
-query = """Find the ASCII values of characters in INDIA and then calculate sum of exponentials of those values. Now open Pages and write this value inside a rectangle. Rectangle coordinates should be 100*100 and 300*200."""
+query = """Find the ASCII values of characters in INDIA and then calculate sum of exponentials of those values.
+Now open Pages and write this value inside a rectangle. Rectangle coordinates should be 100 x 100 and 500 x 400. 
+Now, Send the value to email priyeindia20@gmail.com """
 
 # Run the application
 python pages_mcp_client.py
