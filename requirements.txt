@@ -1,0 +1,13 @@
+python-dotenv
+google-genai
+mcp
+appscript
+pillow
+pyautogui
+asyncio
+python3-xlib
+google-generativeai
+google-api-python-client 
+google-auth 
+google-auth-oauthlib 
+google-auth-httplib2

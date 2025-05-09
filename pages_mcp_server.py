@@ -14,11 +14,17 @@ import time
 import subprocess
 import time
 import pyautogui
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import os
+from google import genai
+from dotenv import load_dotenv
 
 # Configure PyAutoGUI settings
 pyautogui.FAILSAFE = True
 pyautogui.PAUSE = 0.1  # Add small delay between actions
-
+load_dotenv()
 # instantiate an MCP server client
 mcp = FastMCP("Calculator")
 
@@ -161,7 +167,7 @@ def fibonacci_numbers(n: int) -> list:
 
 @mcp.tool()
 async def draw_rectangle_mac(x1: int, y1: int, x2: int, y2: int) -> dict:
-    """Draw a rectangle in Pages from (x1,y1) to (x2,y2) using PyAutoGUI"""
+    """Open Pages and Draw a rectangle box in Pages from (x1,y1) to (x2,y2)"""
     try:
         print("Starting rectangle drawing operation...")
         
@@ -386,68 +392,121 @@ async def add_text_to_rectangle_mac(x1: int, y1: int, x2: int, y2: int, text: st
             ]
         }
 
+
 @mcp.tool()
-async def open_pages_mac() -> dict:
-    """Open Pages on macOS"""
+async def send_email_report(recipient: str, final_result: str) -> dict:
+    """Sends an email report to recipient email containing final result"""
     try:
-        script = '''
-        tell application "Pages"
-            activate
-            -- Create new document if none exists
-            if not (exists document 1) then
-                make new document
-            end if
-            
-            -- Exit full screen if needed
-            tell application "System Events"
-                keystroke "f" using {control down, command down}
-                delay 1
-            end tell
-            
-            -- Ensure window is at a good size
-            set bounds of window 1 to {100, 100, 1000, 800}
-            delay 1
-            
-            tell application "System Events"
-                tell process "Pages"
-                    -- Wait for Pages to be frontmost
-                    repeat until frontmost
-                        delay 0.1
-                    end repeat
-                end tell
-            end tell
-        end tell
-        '''
+        # Email configuration with direct environment access
+        sender_email = os.environ.get("GMAIL_USER")
+        sender_password = os.environ.get("GMAIL_APP_PASSWORD") 
         
-        result = subprocess.run(['osascript', '-e', script], capture_output=True, text=True)
-        
-        if result.returncode != 0:
-            return {
-                "content": [
-                    TextContent(
-                        type="text",
-                        text=f"Error executing AppleScript: {result.stderr}"
-                    )
+        if not sender_email or not sender_password:
+             return {
+                "content": ["Email credentials not found. Please ensure environment variables are set:\n"
+                             "export GMAIL_USER=your.email@gmail.com\n"
+                             "export GMAIL_APP_PASSWORD=your16digitpassword"
+                    
                 ]
             }
+
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = recipient
+        msg['Subject'] = "Pages MCP Agent Execution"
         
-        return {
-            "content": [
-                TextContent(
-                    type="text",
-                    text="Pages opened successfully in window mode"
-                )
-            ]
-        }
+        body = f"""
+                Pages MCP Agent Execution
+
+                 Result: {final_result}
+
+                """
+        msg.attach(MIMEText(body, 'plain'))
+        # Create SMTP session with debug level
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.set_debuglevel(1)  # Enable debug output
+        
+        try:
+            server.ehlo()  # Identify ourselves to SMTP Gmail
+            server.starttls()  # Secure the connection
+            server.ehlo()  # Re-identify ourselves over TLS connection
+            server.login(sender_email, sender_password)  # Login to the server
+            server.send_message(msg)  # Send email
+            return {
+                "content": [f"Email report sent successfully to {recipient}"]
+            }
+        finally:
+            server.quit()  # Always close the connection          
     except Exception as e:
         return {
-            "content": [
-                TextContent(
-                    type="text",
-                    text=f"Error opening Pages: {str(e)}"
-                )
+            "content": [  
+               f"Failed to send email. Error: {str(e)}"
             ]
         }
+
+# @mcp.tool()
+# async def open_pages_mac() -> dict:
+#     """Open Pages on macOS"""
+#     try:
+#         script = '''
+#         tell application "Pages"
+#             activate
+#             -- Create new document if none exists
+#             if not (exists document 1) then
+#                 make new document
+#             end if
+            
+#             -- Exit full screen if needed
+#             tell application "System Events"
+#                 keystroke "f" using {control down, command down}
+#                 delay 1
+#             end tell
+            
+#             -- Ensure window is at a good size
+#             set bounds of window 1 to {100, 100, 1000, 800}
+#             delay 1
+            
+#             tell application "System Events"
+#                 tell process "Pages"
+#                     -- Wait for Pages to be frontmost
+#                     repeat until frontmost
+#                         delay 0.1
+#                     end repeat
+#                 end tell
+#             end tell
+#         end tell
+#         '''
+        
+#         result = subprocess.run(['osascript', '-e', script], capture_output=True, text=True)
+        
+#         if result.returncode != 0:
+#             return {
+#                 "content": [
+#                     TextContent(
+#                         type="text",
+#                         text=f"Error executing AppleScript: {result.stderr}"
+#                     )
+#                 ]
+#             }
+        
+#         return {
+#             "content": [
+#                 TextContent(
+#                     type="text",
+#                     text="Pages opened. Ready to receive input"
+#                 )
+#             ]
+#         }
+#     except Exception as e:
+#         return {
+#             "content": [
+#                 TextContent(
+#                     type="text",
+#                     text=f"Error opening Pages: {str(e)}"
+#                 )
+#             ]
+#         }
 
 # DEFINE RESOURCES
 
@@ -478,6 +537,8 @@ if __name__ == "__main__":
     # Check if running with mcp dev command
     print("STARTING")
     if len(sys.argv) > 1 and sys.argv[1] == "dev":
+        print("RUNNING IN DEV MODE")
         mcp.run()  # Run without transport for dev server
     else:
+        print("RUNNING IN PROD MODE")
         mcp.run(transport="stdio")  # Run with stdio for direct execution
