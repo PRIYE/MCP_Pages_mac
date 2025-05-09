@@ -2,7 +2,19 @@
 
 A Python-based application that performs mathematical calculations and visualizes results in Apple Pages using the Model Context Protocol (MCP) framework. The application combines mathematical operations with automated Pages document creation and manipulation.
 
-## Video [Link](https://www.youtube.com/watch?v=EHZp3ipjlBw) 
+## Video [Youtube](https://www.youtube.com/watch?v=EHZp3ipjlBw) 
+
+## Usage Example
+
+```python
+# Example: Calculate ASCII values of "INDIA" and display result
+query = """Find the ASCII values of characters in INDIA and then calculate sum of exponentials of those values.
+Now open Pages and write this value inside a rectangle. Rectangle coordinates should be 100 x 100 and 500 x 400. 
+Now, Send the value to email priyeindia20@gmail.com """
+
+# Run the application
+python pages_mcp_client.py
+```
 
 ## Logs 
  ```
@@ -277,18 +289,6 @@ GMAIL_USER=your_email_here
    - `open_pages_mac()`: Open Pages application
    - `draw_rectangle_mac(x1: int, y1: int, x2: int, y2: int)`: Draw rectangle
    - `add_text_to_rectangle_mac(x1: int, y1: int, x2: int, y2: int, text: str)`: Add text to rectangle
-
-## Usage Example
-
-```python
-# Example: Calculate ASCII values of "INDIA" and display result
-query = """Find the ASCII values of characters in INDIA and then calculate sum of exponentials of those values.
-Now open Pages and write this value inside a rectangle. Rectangle coordinates should be 100 x 100 and 500 x 400. 
-Now, Send the value to email priyeindia20@gmail.com """
-
-# Run the application
-python pages_mcp_client.py
-```
 
 ## Workflow
 
