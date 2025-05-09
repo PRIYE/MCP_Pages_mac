@@ -2,6 +2,8 @@
 
 A Python-based application that performs mathematical calculations and visualizes results in Apple Pages using the Model Context Protocol (MCP) framework. The application combines mathematical operations with automated Pages document creation and manipulation.
 
+## Video [Link](https://www.youtube.com/watch?v=EHZp3ipjlBw) 
+
 ## Logs 
  ```
  (mcp) priye@Priyes-MacBook-Air Session4  % python pages_mcp_client.py
